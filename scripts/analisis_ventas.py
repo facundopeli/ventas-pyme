@@ -1,26 +1,29 @@
+# Script de análisis de ventas
+# Autor: Facundo Pelizzari
+# Este script procesa un dataset de ventas simuladas para obtener indicadores básicos
+
 import pandas as pd
 import matplotlib.pyplot as plt
 
+# Cargar datos desde la carpeta /datos
 df = pd.read_csv("datos/ventas.csv")
 
-ventas_totales = df["sales_amount"].sum()
-print("Ventas totales:", ventas_totales)
+# Calcular ventas totales
+df["total"] = df["precio"] * df["cantidad"]
+ventas_totales = df["total"].sum()
 
-if "product" in df.columns:
-    producto_top = df.groupby("product")["sales_amount"].sum().idxmax()
-    print("Producto más vendido:", producto_top)
+# Producto más vendido
+producto_mas_vendido = df.groupby("producto")["cantidad"].sum().idxmax()
 
-df["sales_date"] = pd.to_datetime(df["sales_date"])
-ventas_mes = df.groupby(df["sales_date"].dt.to_period("M"))["sales_amount"].sum()
+# Ventas por mes
+df["fecha"] = pd.to_datetime(df["fecha"])
+ventas_por_mes = df.groupby(df["fecha"].dt.to_period("M"))["total"].sum()
 
-print("Ventas por mes:")
-print(ventas_mes)
-
-plt.figure(figsize=(8,4))
-ventas_mes.plot(kind="bar", color="skyblue")
+# Generar gráfico de evolución de ventas
+plt.figure(figsize=(8,5))
+ventas_por_mes.plot(kind="bar")
 plt.title("Evolución de ventas por mes")
 plt.xlabel("Mes")
-plt.ylabel("Monto de ventas")
+plt.ylabel("Ventas totales")
 plt.tight_layout()
 plt.savefig("resultados/ventas_por_mes.png")
-plt.show()
